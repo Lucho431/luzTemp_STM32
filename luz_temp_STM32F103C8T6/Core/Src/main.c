@@ -102,7 +102,7 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 //  HAL_I2C_Init(&hi2c1);
-//  HAL_TIM_Base_Start_IT(&htim2);
+  HAL_TIM_Base_Start_IT(&htim2);
 //  HAL_ADC_Start(&hadc1);
 
   HAL_StatusTypeDef i2c_status;
@@ -115,6 +115,7 @@ int main(void)
   }
 
   lcd_init(&hi2c1, 0x27);
+  init_botonera(&hi2c1, 0x20);
   init_sensores(&hadc1);
   start_menu(0);
 

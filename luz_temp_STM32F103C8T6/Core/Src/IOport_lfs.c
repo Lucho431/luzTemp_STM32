@@ -20,7 +20,7 @@ void init_botonera (I2C_HandleTypeDef* i2c_handler, uint8_t i2c_address){
 	pcf8574_init(i2c_handler, i2c_address);
 
 	//lectura inicial
-	flag_sinBotones = HAL_I2C_Master_Receive(i2c_handler, i2c_address, &read_input, 1, 100);
+	flag_sinBotones = HAL_I2C_Master_Receive(i2c_handler, i2c_address << 1, &read_input, 1, 100);
 	last_input = read_input;
 
 	pcf8574_writePort(0xFF); //weak pullup para todos los pines

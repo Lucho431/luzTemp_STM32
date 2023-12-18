@@ -34,6 +34,17 @@ uint8_t abajo [8] = {
 		0b00000,
 };
 
+uint8_t grados [8] = {
+		0b00110,
+		0b01001,
+		0b01001,
+		0b00110,
+		0b00000,
+		0b00000,
+		0b00000,
+		0b00000,
+};
+
 
 //variables menu
 T_MENU* menuActual;
@@ -42,11 +53,14 @@ static char texto[50];
 uint16_t timeOut_pantalla = 0;
 //variables menu info
 DHT_data sensorDHT;
+int8_t temperatura;
+int8_t humedad;
 uint8_t flag_infoDHT = 0;
 //variables menu seleccion
 uint8_t cursor = 0;
 //variables menu modo luz
 uint8_t modoLuz;
+uint8_t aux_modoLuz;
 
 
 void acc_Info (void);
@@ -75,6 +89,7 @@ T_MENU menu[SIZE_MENU_NOMBRE] = {
 void start_menu (uint8_t service){
 	lcd_CustomChar_create(0, arriba);
 	lcd_CustomChar_create(1, abajo);
+	lcd_CustomChar_create(2, grados);
 	menuActual = &menu[MENU_INFO];
 	menuActual->inicia_menu();
 } //fin start_menu()
@@ -97,13 +112,17 @@ void timeoutMenu (void){
 void init_Info (void){
 
 	sensorDHT = get_datosDHT();
+	temperatura = sensorDHT.temp;
+	humedad = sensorDHT.hum;
 
 	lcd_clear();
 	lcd_put_cur(0, 0);
-	sprintf(texto, "Temp: %02dºC", sensorDHT.temp);
+	sprintf(texto, "Temp: %02d C", temperatura);
 	lcd_send_string(texto);
+	lcd_put_cur(8, 0);
+	lcd_send_customChar(2); //grados
 	lcd_put_cur(0, 1);
-	sprintf(texto, "Humedad: %02d%%", sensorDHT.hum);
+	sprintf(texto, "Humedad: %02d%%", humedad);
 	lcd_send_string(texto);
 } //fin init_Info()
 
@@ -142,7 +161,8 @@ void init_ModoLuz (void){
 	lcd_put_cur(2, 1);
 	lcd_send_data(0x7F); //<-
 	lcd_put_cur(7, 1);
-	switch (modoLuz) {
+	aux_modoLuz = modoLuz;
+	switch (aux_modoLuz) {
 		case 0:
 			lcd_send_string("OFF");
 		break;
@@ -174,12 +194,19 @@ void acc_Info (void){
 
 	if (flag_infoDHT != 0){
 		sensorDHT = get_datosDHT();
+		temperatura = sensorDHT.temp;
+		humedad = sensorDHT.hum;
 
 		lcd_put_cur(6, 0);
-		sprintf(texto, "%02dºC ", sensorDHT.temp);
+		sprintf(texto, "%02d", temperatura);
 		lcd_send_string(texto);
+		lcd_put_cur(8, 0);
+		lcd_send_customChar(2); //grados
+		lcd_put_cur(9, 0);
+		lcd_send_string("C");
+
 		lcd_put_cur(9, 1);
-		sprintf(texto, "%02d%% ", sensorDHT.hum);
+		sprintf(texto, "%02d%% ", humedad);
 		lcd_send_string(texto);
 
 		flag_infoDHT = 0;
@@ -261,40 +288,68 @@ void acc_Seleccion (void){
 
 void acc_ModoLuz (void){
 	if (getStatBoton(IN_BACK) == FALL){
-		menuActual = &menu[MENU_INFO];
+		menuActual = &menu[MENU_SELECCION];
 		menuActual->inicia_menu();
 	} //fin if IN_BACK
 
 	if (getStatBoton(IN_LEFT) == FALL){
-		if (modoLuz != 0){
-			modoLuz = 1;
+		if (aux_modoLuz != 0){
+			aux_modoLuz = 0;
 		}else{
-			modoLuz = 0;
+			aux_modoLuz = 1;
 		}
+
+		lcd_put_cur(7, 1);
+		switch (aux_modoLuz) {
+			case 0:
+				lcd_send_string("OFF");
+			break;
+			case 1:
+				lcd_send_string("ON ");
+			break;
+			default:
+			break;
+		} //fin switch modoLuz
 	} //fin if IN_LEFT
 
 	if (getStatBoton(IN_RIGHT) == FALL){
-		if (modoLuz != 0){
-			modoLuz = 1;
+		if (aux_modoLuz != 0){
+			aux_modoLuz = 0;
 		}else{
-			modoLuz = 0;
+			aux_modoLuz = 1;
 		}
+
+		lcd_put_cur(7, 1);
+		switch (aux_modoLuz) {
+			case 0:
+				lcd_send_string("OFF");
+			break;
+			case 1:
+				lcd_send_string("ON ");
+			break;
+			default:
+			break;
+		} //fin switch modoLuz
 	} //fin if IN_RIGHT
 
 	if (getStatBoton(IN_OK) == FALL){
+		modoLuz = aux_modoLuz;
 		if (modoLuz != 0){
 			setOutput(OUT_MODO, 0); //logica negativa
 		}else{
 			setOutput(OUT_MODO, 1); //logica negativa
 		}
 		set_modoLuz(modoLuz);
+
+		menuActual = &menu[MENU_SELECCION];
+		menuActual->inicia_menu();
 	} //fin if IN_OK
 } //fin acc_ModoLuz()
 
 
 void acc_LdrPrende (void){
 	if (getStatBoton(IN_BACK) == FALL){
-		menuActual = &menu[MENU_INFO];
+		menuActual = &menu[MENU_SELECCION];
 		menuActual->inicia_menu();
 	} //fin if IN_BACK
 
@@ -314,7 +369,7 @@ void acc_LdrPrende (void){
 
 void acc_LdrApaga (void){
 	if (getStatBoton(IN_BACK) == FALL){
-		menuActual = &menu[MENU_INFO];
+		menuActual = &menu[MENU_SELECCION];
 		menuActual->inicia_menu();
 	} //fin if IN_BACK
 
