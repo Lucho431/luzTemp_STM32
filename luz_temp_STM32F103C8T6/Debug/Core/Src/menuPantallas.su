@@ -1,0 +1,14 @@
+../Core/Src/menuPantallas.c:75:6:start_menu	16	static
+../Core/Src/menuPantallas.c:83:6:check_menu	8	static
+../Core/Src/menuPantallas.c:88:6:timeoutMenu	4	static
+../Core/Src/menuPantallas.c:97:6:init_Info	24	static
+../Core/Src/menuPantallas.c:111:6:init_Seleccion	8	static
+../Core/Src/menuPantallas.c:138:6:init_ModoLuz	8	static
+../Core/Src/menuPantallas.c:160:6:init_LdrPrende	4	static
+../Core/Src/menuPantallas.c:165:6:init_LdrApaga	4	static
+../Core/Src/menuPantallas.c:173:6:acc_Info	24	static
+../Core/Src/menuPantallas.c:195:6:acc_Seleccion	8	static
+../Core/Src/menuPantallas.c:262:6:acc_ModoLuz	8	static
+../Core/Src/menuPantallas.c:295:6:acc_LdrPrende	8	static
+../Core/Src/menuPantallas.c:315:6:acc_LdrApaga	8	static
+../Core/Src/menuPantallas.c:335:6:refresh_infoDHT	4	static
