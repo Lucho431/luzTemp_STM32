@@ -61,7 +61,8 @@ uint8_t cursor = 0;
 //variables menu modo luz
 uint8_t modoLuz;
 uint8_t aux_modoLuz;
-
+//variables menu umbral
+uint8_t pantallaUmbral = 0;
 
 void acc_Info (void);
 void acc_Seleccion (void);
@@ -178,12 +179,36 @@ void init_ModoLuz (void){
 
 
 void init_LdrPrende (void){
-
+	lcd_clear();
+	lcd_put_cur(0, 0);
+	lcd_send_string("    UMBRAL NOCHE    ");
+	lcd_put_cur(0, 1);
+	sprintf(texto, "VALOR GRABADO: %04lu", get_umbralLDR(0));
+	lcd_send_string(texto);
+	lcd_put_cur(0, 2);
+	sprintf(texto, "VALOR ACTUAL: %04lu", get_ldr());
+	lcd_send_string(texto);
+	lcd_put_cur(0, 3);
+	lcd_send_string("ESTABLECER UMBRAL?");
+	pantallaUmbral = 0;
+	timeOut_pantalla = 0;
 } //fin init_LdrPrende()
 
 
 void init_LdrApaga (void){
-
+	lcd_clear();
+	lcd_put_cur(0, 0);
+	lcd_send_string("     UMBRAL DIA     ");
+	lcd_put_cur(0, 1);
+	sprintf(texto, "VALOR GRABADO: %04lu", get_umbralLDR(1));
+	lcd_send_string(texto);
+	lcd_put_cur(0, 2);
+	sprintf(texto, "VALOR ACTUAL: %04lu", get_ldr());
+	lcd_send_string(texto);
+	lcd_put_cur(0, 3);
+	lcd_send_string("ESTABLECER UMBRAL?");
+	pantallaUmbral = 0;
+	timeOut_pantalla = 0;
 } //fin init_LdrApaga()
 
 /////////////////////////////////////////
@@ -334,11 +359,11 @@ void acc_ModoLuz (void){
 
 	if (getStatBoton(IN_OK) == FALL){
 		modoLuz = aux_modoLuz;
-		if (modoLuz != 0){
-			setOutput(OUT_MODO, 0); //logica negativa
-		}else{
-			setOutput(OUT_MODO, 1); //logica negativa
-		}
+//		if (modoLuz != 0){
+//			setOutput(OUT_MODO, 0); //logica negativa
+//		}else{
+//			setOutput(OUT_MODO, 1); //logica negativa
+//		}
 		set_modoLuz(modoLuz);
 
 		menuActual = &menu[MENU_SELECCION];
@@ -348,42 +373,90 @@ void acc_ModoLuz (void){
 
 
 void acc_LdrPrende (void){
-	if (getStatBoton(IN_BACK) == FALL){
-		menuActual = &menu[MENU_SELECCION];
-		menuActual->inicia_menu();
-	} //fin if IN_BACK
+	switch (pantallaUmbral){
+		case 0:
+			if (getStatBoton(IN_BACK) == FALL){
+				menuActual = &menu[MENU_SELECCION];
+				menuActual->inicia_menu();
+				break;
+			} //fin if IN_BACK
 
-	if (getStatBoton(IN_LEFT) == FALL){
+			if (timeOut_pantalla > 99){ // un segundo paso
+				lcd_put_cur(14, 2);
+				sprintf(texto, "%04lu", get_ldr());
+				lcd_send_string(texto);
+				timeOut_pantalla = 0;
+			} //fin if timeOut_pantalla
 
-	} //fin if IN_LEFT
+			if (getStatBoton(IN_OK) == FALL){
+				set_umbralLDR(0);
 
-	if (getStatBoton(IN_RIGHT) == FALL){
+				lcd_clear();
+				lcd_put_cur(0, 1);
+				lcd_send_string("UMBRAL NOCHE GRABADO");
+				pantallaUmbral = 1;
+				timeOut_pantalla = 0;
+				break;
+			} //fin if IN_OK
+		break;
+		case 1:
+			if (timeOut_pantalla > 349){ // 3,5 segundos pasaron
+				menuActual = &menu[MENU_SELECCION];
+				menuActual->inicia_menu();
+			} //fin if timeOut_pantalla
 
-	} //fin if IN_RIGHT
-
-	if (getStatBoton(IN_OK) == FALL){
-
-	} //fin if IN_OK
+			if (getStatBoton(IN_BACK) == FALL){
+				menuActual = &menu[MENU_SELECCION];
+				menuActual->inicia_menu();
+			} //fin if IN_BACK
+		break;
+		default:
+		break;
+	} //fin switch pantallaUmbral
 } //fin acc_LdrPrende()
 
 
 void acc_LdrApaga (void){
-	if (getStatBoton(IN_BACK) == FALL){
-		menuActual = &menu[MENU_SELECCION];
-		menuActual->inicia_menu();
-	} //fin if IN_BACK
+	switch (pantallaUmbral){
+		case 0:
+			if (getStatBoton(IN_BACK) == FALL){
+				menuActual = &menu[MENU_SELECCION];
+				menuActual->inicia_menu();
+				break;
+			} //fin if IN_BACK
 
-	if (getStatBoton(IN_LEFT) == FALL){
+			if (timeOut_pantalla > 99){ // un segundo paso
+				lcd_put_cur(14, 2);
+				sprintf(texto, "%04lu", get_ldr());
+				lcd_send_string(texto);
+				timeOut_pantalla = 0;
+			} //fin if timeOut_pantalla
 
-	} //fin if IN_LEFT
+			if (getStatBoton(IN_OK) == FALL){
+				set_umbralLDR(1);
 
-	if (getStatBoton(IN_RIGHT) == FALL){
+				lcd_clear();
+				lcd_put_cur(0, 1);
+				lcd_send_string("UMBRAL NOCHE GRABADO");
+				pantallaUmbral = 1;
+				timeOut_pantalla = 0;
+				break;
+			} //fin if IN_OK
+		break;
+		case 1:
+			if (timeOut_pantalla > 349){ // 3,5 segundos pasaron
+				menuActual = &menu[MENU_SELECCION];
+				menuActual->inicia_menu();
+			} //fin if timeOut_pantalla
 
-	} //fin if IN_RIGHT
-
-	if (getStatBoton(IN_OK) == FALL){
-
-	} //fin if IN_OK
+			if (getStatBoton(IN_BACK) == FALL){
+				menuActual = &menu[MENU_SELECCION];
+				menuActual->inicia_menu();
+			} //fin if IN_BACK
+		break;
+		default:
+		break;
+	} //fin switch pantallaUmbral
 } //fin acc_LdrApaga()
 
 

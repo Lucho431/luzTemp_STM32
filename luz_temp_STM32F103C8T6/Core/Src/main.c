@@ -117,6 +117,7 @@ int main(void)
   lcd_init(&hi2c1, 0x27);
   init_botonera(&hi2c1, 0x20);
   init_sensores(&hadc1);
+  set_modoLuz(0);
   start_menu(0);
 
   /* USER CODE END 2 */
@@ -144,10 +145,13 @@ int main(void)
 			  periodo_temp = 99;
 		  }
 
+		  timeoutMenu();
+
 		  flag_tim2 = 0;
 	  } //fin if flag_tim2
 
 	  check_menu();
+	  check_luzAuto();
 	  update_teclas();
 
     /* USER CODE END WHILE */
