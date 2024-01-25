@@ -125,43 +125,48 @@ void init_Info (void){
 	lcd_put_cur(0, 1);
 	sprintf(texto, "Humedad: %02d%%", humedad);
 	lcd_send_string(texto);
+	lcd_put_cur(0, 2);
+	lcd_send_string("Luz: ");
+	lcd_send_string( (getStat_rele() != 0) ? "APAGADA" : "PRENDIDA");
+	lcd_put_cur(0, 3);
+	lcd_send_string((get_modoLuz() != 0) ? "AUTOMATICO" : "MANUAL");
 } //fin init_Info()
 
 
 void init_Seleccion (void){
 	lcd_clear();
-	lcd_put_cur(6, 0);
+	lcd_put_cur(7, 0);
 	lcd_send_string("MENU");
-	lcd_put_cur(0, 1);
+	lcd_put_cur(2, 2);
 	lcd_send_data(0x7F); //<-
 	switch (cursor){
 		case 0:
-			lcd_put_cur(2, 1);
+			lcd_put_cur(4, 2);
 			lcd_send_string("MODO DE LUZ");
 		break;
 		case 1:
-			lcd_put_cur(3, 1);
+			lcd_put_cur(5, 2);
 			lcd_send_string("UMBRAL DIA");
 		break;
 		case 2:
-			lcd_put_cur(2, 1);
+			lcd_put_cur(4, 2);
 			lcd_send_string("UMBRAL NOCHE");
 		break;
 		default:
 		break;
 	} //fin switch cursor
-	lcd_put_cur(15, 1);
+	lcd_put_cur(17, 2);
 	lcd_send_data(0x7E); //->
 } //fin init_Seleccion()
 
 
 void init_ModoLuz (void){
 	lcd_clear();
-	lcd_put_cur(2, 0);
-	lcd_send_string("MODO DE LUZ");
-	lcd_put_cur(2, 1);
+	lcd_put_cur(0, 0);
+	lcd_send_string("MODO LUZ AUTOMATICA");
+	lcd_put_cur(4, 2);
 	lcd_send_data(0x7F); //<-
-	lcd_put_cur(7, 1);
+	lcd_put_cur(9, 2);
 	aux_modoLuz = modoLuz;
 	switch (aux_modoLuz) {
 		case 0:
@@ -173,7 +178,7 @@ void init_ModoLuz (void){
 		default:
 		break;
 	} //fin switch modoLuz
-	lcd_put_cur(13, 1);
+	lcd_put_cur(15, 2);
 	lcd_send_data(0x7E); //->
 } //fin init_ModoLuz()
 
@@ -234,6 +239,11 @@ void acc_Info (void){
 		sprintf(texto, "%02d%% ", humedad);
 		lcd_send_string(texto);
 
+		lcd_put_cur(5, 2);
+		lcd_send_string( (getStat_rele() != 0) ? "APAGADA " : "PRENDIDA");
+		lcd_put_cur(0, 3);
+		lcd_send_string((get_modoLuz() != 0) ? "AUTOMATICO" : "MANUAL    ");
+
 		flag_infoDHT = 0;
 	} //fin if flag_infoDHT
 
@@ -255,7 +265,7 @@ void acc_Seleccion (void){
 		cursor--;
 		if (cursor > 2) cursor = 2;
 
-		lcd_put_cur(1, 1);
+		lcd_put_cur(3, 2);
 		switch (cursor){
 			case 0:
 				lcd_send_string(" MODO DE LUZ  ");
@@ -275,7 +285,7 @@ void acc_Seleccion (void){
 		cursor++;
 		if (cursor > 2) cursor = 0;
 
-		lcd_put_cur(1, 1);
+		lcd_put_cur(3, 2);
 		switch (cursor){
 			case 0:
 				lcd_send_string(" MODO DE LUZ  ");
@@ -324,7 +334,7 @@ void acc_ModoLuz (void){
 			aux_modoLuz = 1;
 		}
 
-		lcd_put_cur(7, 1);
+		lcd_put_cur(9, 2);
 		switch (aux_modoLuz) {
 			case 0:
 				lcd_send_string("OFF");
@@ -344,7 +354,7 @@ void acc_ModoLuz (void){
 			aux_modoLuz = 1;
 		}
 
-		lcd_put_cur(7, 1);
+		lcd_put_cur(9, 2);
 		switch (aux_modoLuz) {
 			case 0:
 				lcd_send_string("OFF");
@@ -437,7 +447,7 @@ void acc_LdrApaga (void){
 
 				lcd_clear();
 				lcd_put_cur(0, 1);
-				lcd_send_string("UMBRAL NOCHE GRABADO");
+				lcd_send_string("UMBRAL DIA GRABADO");
 				pantallaUmbral = 1;
 				timeOut_pantalla = 0;
 				break;

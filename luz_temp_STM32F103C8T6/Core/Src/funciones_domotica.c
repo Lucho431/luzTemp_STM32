@@ -11,8 +11,8 @@
 //variables
 static uint32_t lecturaLDR;
 ADC_HandleTypeDef* hadc;
-static uint32_t umbralMaxLDR;
-static uint32_t umbralMinLDR;
+static uint32_t umbralMaxLDR = 1200; //valor estimado a priori
+static uint32_t umbralMinLDR = 275; //valor estimado a priori
 uint8_t modoAuto = 0; //0 -> manual; 1 -> automatico.
 static DHT_sensor sensorDHT = {GPIOB, GPIO_PIN_13, DHT11, GPIO_NOPULL};
 uint8_t estadoRele;
@@ -80,8 +80,8 @@ void check_luzAuto (void){
 
 			if (getStatBoton(IN_LUZ) == FALL){
 				estadoRele = !estadoRele;
-				HAL_GPIO_WritePin(OUT_rele_GPIO_Port, OUT_rele_Pin, estadoRele);
-				setOutput(OUT_LUZ, !estadoRele); //LOGICA NEGATIVA
+				HAL_GPIO_WritePin(OUT_rele_GPIO_Port, OUT_rele_Pin, estadoRele); //LOGICA NEGATIVA
+				setOutput(OUT_LUZ, estadoRele); //LOGICA NEGATIVA
 			} //fin if IN_LUZ
 		break;
 		case 1:
@@ -90,20 +90,20 @@ void check_luzAuto (void){
 				break;
 			} //fin if IN_MODO
 
-			switch (estadoRele){
-				case 0:
+			switch (estadoRele){ //LOGICA NEGATIVA
+				case 1:
 					if (lecturaLDR < umbralMinLDR){
-						estadoRele = 1;
+						estadoRele = 0;
 						HAL_GPIO_WritePin(OUT_rele_GPIO_Port, OUT_rele_Pin, estadoRele);
-						setOutput(OUT_LUZ, !estadoRele); //LOGICA NEGATIVA
+						setOutput(OUT_LUZ, estadoRele); //LOGICA NEGATIVA
 						break;
 					} //fin if lecturaLDR...
 				break;
-				case 1:
+				case 0:
 					if (lecturaLDR > umbralMaxLDR){
-						estadoRele = 0;
+						estadoRele = 1;
 						HAL_GPIO_WritePin(OUT_rele_GPIO_Port, OUT_rele_Pin, estadoRele);
-						setOutput(OUT_LUZ, !estadoRele); //LOGICA NEGATIVA
+						setOutput(OUT_LUZ, estadoRele); //LOGICA NEGATIVA
 						break;
 					} //fin if lecturaLDR...
 				break;
@@ -114,4 +114,9 @@ void check_luzAuto (void){
 		default:
 		break;
 	} //fin switch modoAuto
-} //fin check_luzAuto
+} //fin check_luzAuto()
+
+
+uint8_t getStat_rele (void){
+	return estadoRele;
+} //fin get_rele ()

@@ -57,7 +57,7 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define OUT_rele_Pin GPIO_PIN_13
+#define OUT_rele_Pin GPIO_PIN_15
 #define OUT_rele_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 

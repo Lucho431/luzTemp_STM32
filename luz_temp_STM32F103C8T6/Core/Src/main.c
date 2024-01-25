@@ -103,7 +103,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 //  HAL_I2C_Init(&hi2c1);
   HAL_TIM_Base_Start_IT(&htim2);
-//  HAL_ADC_Start(&hadc1);
+  HAL_ADC_Start(&hadc1);
 
   HAL_StatusTypeDef i2c_status;
 

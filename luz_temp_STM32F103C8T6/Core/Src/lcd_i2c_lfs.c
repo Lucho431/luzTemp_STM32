@@ -41,7 +41,7 @@ void lcd_send_data (char data)
 void lcd_clear (void)
 {
 	lcd_send_cmd (0x80);
-	for (int i=0; i<70; i++)
+	for (int i=0; i<80; i++)
 	{
 		lcd_send_data (' ');
 	}
