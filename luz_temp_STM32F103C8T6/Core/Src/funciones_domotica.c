@@ -50,13 +50,13 @@ uint32_t get_umbralLDR (uint8_t u){
 } //fin get_umbralLDR
 
 
-void set_umbralLDR (uint8_t u){
+void set_umbralLDR (uint8_t u, uint32_t val){
 	if (u != 0){
-		umbralMaxLDR = lecturaLDR;
+		umbralMaxLDR = val;
 		return;
 	}
 
-	umbralMinLDR = lecturaLDR;
+	umbralMinLDR = val;
 } //fin set_umbralLDR
 
 

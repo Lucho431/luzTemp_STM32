@@ -146,6 +146,8 @@ int main(void)
 		  }
 
 		  timeoutMenu();
+		  check_duracionPulsadores();
+
 
 		  flag_tim2 = 0;
 	  } //fin if flag_tim2

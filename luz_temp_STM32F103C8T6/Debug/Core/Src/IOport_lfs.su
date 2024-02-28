@@ -1,7 +1,7 @@
-IOport_lfs.c:18:6:init_botonera	24	static
-IOport_lfs.c:30:6:lecturaTeclas	8	static
-IOport_lfs.c:35:6:update_teclas	4	static
-IOport_lfs.c:45:9:getStatBoton	16	static
-IOport_lfs.c:62:9:detectaAlgunBoton	4	static
-IOport_lfs.c:67:6:setOutput	16	static
-IOport_lfs.c:78:6:update_outputs	8	static
+../Core/Src/IOport_lfs.c:18:6:init_botonera	24	static
+../Core/Src/IOport_lfs.c:30:6:lecturaTeclas	8	static
+../Core/Src/IOport_lfs.c:35:6:update_teclas	4	static
+../Core/Src/IOport_lfs.c:45:9:getStatBoton	16	static
+../Core/Src/IOport_lfs.c:62:9:detectaAlgunBoton	4	static
+../Core/Src/IOport_lfs.c:67:6:setOutput	16	static
+../Core/Src/IOport_lfs.c:78:6:update_outputs	8	static

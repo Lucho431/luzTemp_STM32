@@ -63,6 +63,11 @@ uint8_t modoLuz;
 uint8_t aux_modoLuz;
 //variables menu umbral
 uint8_t pantallaUmbral = 0;
+uint32_t valorUmbral;
+//variables de botones
+uint8_t holdBoton = 0;
+uint8_t flag_holdBoton = 0;
+uint8_t repitePulso = 0;
 
 void acc_Info (void);
 void acc_Seleccion (void);
@@ -105,6 +110,11 @@ void timeoutMenu (void){
 	timeOut_pantalla++;
 } //fin timeoutMenu()
 
+
+void check_duracionPulsadores (void){
+	holdBoton++;
+	repitePulso++;
+} //fin duracionPulsadores()
 
 /////////////////////////////////////////
 //          INICIALIZADORES            //
@@ -187,14 +197,17 @@ void init_LdrPrende (void){
 	lcd_clear();
 	lcd_put_cur(0, 0);
 	lcd_send_string("    UMBRAL NOCHE    ");
+	valorUmbral = get_umbralLDR(0);
 	lcd_put_cur(0, 1);
-	sprintf(texto, "VALOR GRABADO: %04lu", get_umbralLDR(0));
+	sprintf(texto, "VALOR GRABADO: %04lu", valorUmbral);
 	lcd_send_string(texto);
 	lcd_put_cur(0, 2);
 	sprintf(texto, "VALOR ACTUAL: %04lu", get_ldr());
 	lcd_send_string(texto);
 	lcd_put_cur(0, 3);
-	lcd_send_string("ESTABLECER UMBRAL?");
+	lcd_send_string("VALOR NUEVO: ");
+	sprintf(texto, "%c%04lu%c", 0x7F, valorUmbral, 0x7E);
+	lcd_send_string(texto);
 	pantallaUmbral = 0;
 	timeOut_pantalla = 0;
 } //fin init_LdrPrende()
@@ -204,14 +217,17 @@ void init_LdrApaga (void){
 	lcd_clear();
 	lcd_put_cur(0, 0);
 	lcd_send_string("     UMBRAL DIA     ");
+	valorUmbral = get_umbralLDR(1);
 	lcd_put_cur(0, 1);
-	sprintf(texto, "VALOR GRABADO: %04lu", get_umbralLDR(1));
+	sprintf(texto, "VALOR GRABADO: %04lu", valorUmbral);
 	lcd_send_string(texto);
 	lcd_put_cur(0, 2);
 	sprintf(texto, "VALOR ACTUAL: %04lu", get_ldr());
 	lcd_send_string(texto);
 	lcd_put_cur(0, 3);
-	lcd_send_string("ESTABLECER UMBRAL?");
+	lcd_send_string("VALOR NUEVO: ");
+	sprintf(texto, "%c%04lu%c", 0x7F, valorUmbral, 0x7E);
+	lcd_send_string(texto);
 	pantallaUmbral = 0;
 	timeOut_pantalla = 0;
 } //fin init_LdrApaga()
@@ -228,7 +244,7 @@ void acc_Info (void){
 		humedad = sensorDHT.hum;
 
 		lcd_put_cur(6, 0);
-		sprintf(texto, "%02d", temperatura);
+		sprintf(texto, "%02d  ", temperatura);
 		lcd_send_string(texto);
 		lcd_put_cur(8, 0);
 		lcd_send_customChar(2); //grados
@@ -236,7 +252,7 @@ void acc_Info (void){
 		lcd_send_string("C");
 
 		lcd_put_cur(9, 1);
-		sprintf(texto, "%02d%% ", humedad);
+		sprintf(texto, "%02d%%  ", humedad);
 		lcd_send_string(texto);
 
 		lcd_put_cur(5, 2);
@@ -391,6 +407,78 @@ void acc_LdrPrende (void){
 				break;
 			} //fin if IN_BACK
 
+			switch (getStatBoton(IN_LEFT)) {
+				case FALL:
+					valorUmbral--;
+					if (valorUmbral > 3000) valorUmbral = 3000;
+
+					lcd_put_cur(14, 3);
+					sprintf(texto, "%04lu", valorUmbral);
+					lcd_send_string(texto);
+
+					holdBoton = 0;
+				break;
+				case LOW_L:
+					if (holdBoton > 150){ //en 10*ms.
+						flag_holdBoton = 1;
+					}
+
+					if (flag_holdBoton != 0){
+						if (repitePulso > 24){ //en 10*ms.
+							valorUmbral -= 10;
+							if (valorUmbral > 3000) valorUmbral = 3000;
+
+							lcd_put_cur(14, 3);
+							sprintf(texto, "%04lu", valorUmbral);
+							lcd_send_string(texto);
+
+							repitePulso = 0;
+						} //fin if repitePulso
+					} //fin if flag_holdBoton
+				break;
+				case RISE:
+					flag_holdBoton = 0;
+				break;
+				default:
+				break;
+			} //fin switch IN_LEFT
+
+			switch (getStatBoton(IN_RIGHT)) {
+				case FALL:
+					valorUmbral++;
+					if (valorUmbral > 3000) valorUmbral = 0;
+
+					lcd_put_cur(14, 3);
+					sprintf(texto, "%04lu", valorUmbral);
+					lcd_send_string(texto);
+
+					holdBoton = 0;
+				break;
+				case LOW_L:
+					if (holdBoton > 150){ //en 10*ms.
+						flag_holdBoton = 1;
+					}
+
+					if (flag_holdBoton != 0){
+						if (repitePulso > 24){ //en 10*ms.
+							valorUmbral += 10;
+							if (valorUmbral > 3000) valorUmbral = 0;
+
+							lcd_put_cur(14, 3);
+							sprintf(texto, "%04lu", valorUmbral);
+							lcd_send_string(texto);
+
+							repitePulso = 0;
+						} //fin if repitePulso
+					} //fin if flag_holdBoton
+				break;
+				case RISE:
+					flag_holdBoton = 0;
+				break;
+				default:
+				break;
+			} //fin switch IN_RIGHT
+
 			if (timeOut_pantalla > 99){ // un segundo paso
 				lcd_put_cur(14, 2);
 				sprintf(texto, "%04lu", get_ldr());
@@ -399,7 +487,7 @@ void acc_LdrPrende (void){
 			} //fin if timeOut_pantalla
 
 			if (getStatBoton(IN_OK) == FALL){
-				set_umbralLDR(0);
+				set_umbralLDR(0, valorUmbral);
 
 				lcd_clear();
 				lcd_put_cur(0, 1);
@@ -435,6 +523,78 @@ void acc_LdrApaga (void){
 				break;
 			} //fin if IN_BACK
 
+			switch (getStatBoton(IN_LEFT)) {
+				case FALL:
+					valorUmbral--;
+					if (valorUmbral > 3000) valorUmbral = 3000;
+
+					lcd_put_cur(14, 3);
+					sprintf(texto, "%04lu", valorUmbral);
+					lcd_send_string(texto);
+
+					holdBoton = 0;
+				break;
+				case LOW_L:
+					if (holdBoton > 150){ //en 10*ms.
+						flag_holdBoton = 1;
+					}
+
+					if (flag_holdBoton != 0){
+						if (repitePulso > 24){ //en 10*ms.
+							valorUmbral -= 10;
+							if (valorUmbral > 3000) valorUmbral = 3000;
+
+							lcd_put_cur(14, 3);
+							sprintf(texto, "%04lu", valorUmbral);
+							lcd_send_string(texto);
+
+							repitePulso = 0;
+						} //fin if repitePulso
+					} //fin if flag_holdBoton
+				break;
+				case RISE:
+					flag_holdBoton = 0;
+				break;
+				default:
+				break;
+			} //fin switch IN_LEFT
+
+			switch (getStatBoton(IN_RIGHT)) {
+				case FALL:
+					valorUmbral++;
+					if (valorUmbral > 3000) valorUmbral = 0;
+
+					lcd_put_cur(14, 3);
+					sprintf(texto, "%04lu", valorUmbral);
+					lcd_send_string(texto);
+
+					holdBoton = 0;
+				break;
+				case LOW_L:
+					if (holdBoton > 150){ //en 10*ms.
+						flag_holdBoton = 1;
+					}
+
+					if (flag_holdBoton != 0){
+						if (repitePulso > 24){ //en 10*ms.
+							valorUmbral += 10;
+							if (valorUmbral > 3000) valorUmbral = 0;
+
+							lcd_put_cur(14, 3);
+							sprintf(texto, "%04lu", valorUmbral);
+							lcd_send_string(texto);
+
+							repitePulso = 0;
+						} //fin if repitePulso
+					} //fin if flag_holdBoton
+				break;
+				case RISE:
+					flag_holdBoton = 0;
+				break;
+				default:
+				break;
+			} //fin switch IN_RIGHT
+
 			if (timeOut_pantalla > 99){ // un segundo paso
 				lcd_put_cur(14, 2);
 				sprintf(texto, "%04lu", get_ldr());
@@ -443,7 +603,7 @@ void acc_LdrApaga (void){
 			} //fin if timeOut_pantalla
 
 			if (getStatBoton(IN_OK) == FALL){
-				set_umbralLDR(1);
+				set_umbralLDR(1, valorUmbral);
 
 				lcd_clear();
 				lcd_put_cur(0, 1);

@@ -17,7 +17,7 @@ DHT_data get_datosDHT (void);
 void update_ldr (void);
 uint32_t get_ldr (void);
 uint32_t get_umbralLDR (uint8_t);
-void set_umbralLDR (uint8_t);
+void set_umbralLDR (uint8_t, uint32_t);
 void set_modoLuz (uint8_t);
 uint8_t get_modoLuz (void);
 void check_luzAuto (void);
