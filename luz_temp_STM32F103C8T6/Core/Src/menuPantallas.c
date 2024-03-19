@@ -56,11 +56,11 @@ DHT_data sensorDHT;
 int8_t temperatura;
 int8_t humedad;
 uint8_t flag_infoDHT = 0;
+uint8_t flag_infoModo = 0;
 //variables menu seleccion
 uint8_t cursor = 0;
 //variables menu modo luz
 uint8_t modoLuz;
-uint8_t aux_modoLuz;
 //variables menu umbral
 uint8_t pantallaUmbral = 0;
 uint32_t valorUmbral;
@@ -177,8 +177,8 @@ void init_ModoLuz (void){
 	lcd_put_cur(4, 2);
 	lcd_send_data(0x7F); //<-
 	lcd_put_cur(9, 2);
-	aux_modoLuz = modoLuz;
-	switch (aux_modoLuz) {
+	modoLuz = get_modoLuz();
+	switch (modoLuz) {
 		case 0:
 			lcd_send_string("OFF");
 		break;
@@ -261,7 +261,17 @@ void acc_Info (void){
 		lcd_send_string((get_modoLuz() != 0) ? "AUTOMATICO" : "MANUAL    ");
 
 		flag_infoDHT = 0;
+		flag_infoModo = 0;
 	} //fin if flag_infoDHT
+
+	if (flag_infoModo != 0){
+		lcd_put_cur(5, 2);
+		lcd_send_string( (getStat_rele() != 0) ? "APAGADA " : "PRENDIDA");
+		lcd_put_cur(0, 3);
+		lcd_send_string((get_modoLuz() != 0) ? "AUTOMATICO" : "MANUAL    ");
+
+		flag_infoModo = 0;
+	}
 
 	if (getStatBoton(IN_OK) == FALL){
 		menuActual = &menu[MENU_SELECCION];
@@ -344,14 +354,14 @@ void acc_ModoLuz (void){
 	} //fin if IN_BACK
 
 	if (getStatBoton(IN_LEFT) == FALL){
-		if (aux_modoLuz != 0){
-			aux_modoLuz = 0;
+		if (modoLuz != 0){
+			modoLuz = 0;
 		}else{
-			aux_modoLuz = 1;
+			modoLuz = 1;
 		}
 
 		lcd_put_cur(9, 2);
-		switch (aux_modoLuz) {
+		switch (modoLuz) {
 			case 0:
 				lcd_send_string("OFF");
 			break;
@@ -364,14 +374,14 @@ void acc_ModoLuz (void){
 	} //fin if IN_LEFT
 
 	if (getStatBoton(IN_RIGHT) == FALL){
-		if (aux_modoLuz != 0){
-			aux_modoLuz = 0;
+		if (modoLuz != 0){
+			modoLuz = 0;
 		}else{
-			aux_modoLuz = 1;
+			modoLuz = 1;
 		}
 
 		lcd_put_cur(9, 2);
-		switch (aux_modoLuz) {
+		switch (modoLuz) {
 			case 0:
 				lcd_send_string("OFF");
 			break;
@@ -384,7 +394,6 @@ void acc_ModoLuz (void){
 	} //fin if IN_RIGHT
 
 	if (getStatBoton(IN_OK) == FALL){
-		modoLuz = aux_modoLuz;
 //		if (modoLuz != 0){
 //			setOutput(OUT_MODO, 0); //logica negativa
 //		}else{
@@ -633,3 +642,7 @@ void acc_LdrApaga (void){
 void refresh_infoDHT (void){
 	flag_infoDHT = 1;
 } //fin refresh_infoDHT()
+
+void refresh_infoModo (void){
+	flag_infoModo = 1;
+} //fin refresh_infoModo

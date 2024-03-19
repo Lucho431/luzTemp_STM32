@@ -39,5 +39,6 @@ void check_pulsadores (void);
 void check_duracionPulsadores (void);
 void timeoutMenu (void);
 void refresh_infoDHT (void);
+void refresh_infoModo (void);
 
 #endif /* INC_MENUPANTALLAS_H_ */

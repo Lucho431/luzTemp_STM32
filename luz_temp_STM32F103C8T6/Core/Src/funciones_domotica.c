@@ -6,6 +6,7 @@
  */
 
 #include "funciones_domotica.h"
+#include "menuPantallas.h"
 #include "IOport_lfs.h"
 
 //variables
@@ -75,6 +76,7 @@ void check_luzAuto (void){
 		case 0:
 			if (getStatBoton(IN_MODO) == FALL){
 				set_modoLuz(1);
+				refresh_infoModo();
 				break;
 			} //fin if IN_MODO
 
@@ -82,11 +84,14 @@ void check_luzAuto (void){
 				estadoRele = !estadoRele;
 				HAL_GPIO_WritePin(OUT_rele_GPIO_Port, OUT_rele_Pin, estadoRele); //LOGICA NEGATIVA
 				setOutput(OUT_LUZ, estadoRele); //LOGICA NEGATIVA
+
+				refresh_infoModo();
 			} //fin if IN_LUZ
 		break;
 		case 1:
 			if (getStatBoton(IN_MODO) == FALL){
 				set_modoLuz(0);
+				refresh_infoModo();
 				break;
 			} //fin if IN_MODO
 
@@ -96,6 +101,7 @@ void check_luzAuto (void){
 						estadoRele = 0;
 						HAL_GPIO_WritePin(OUT_rele_GPIO_Port, OUT_rele_Pin, estadoRele);
 						setOutput(OUT_LUZ, estadoRele); //LOGICA NEGATIVA
+						refresh_infoModo();
 						break;
 					} //fin if lecturaLDR...
 				break;
@@ -104,6 +110,7 @@ void check_luzAuto (void){
 						estadoRele = 1;
 						HAL_GPIO_WritePin(OUT_rele_GPIO_Port, OUT_rele_Pin, estadoRele);
 						setOutput(OUT_LUZ, estadoRele); //LOGICA NEGATIVA
+						refresh_infoModo();
 						break;
 					} //fin if lecturaLDR...
 				break;
