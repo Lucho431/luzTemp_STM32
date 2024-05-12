@@ -18,6 +18,9 @@ uint8_t modoAuto = 0; //0 -> manual; 1 -> automatico.
 static DHT_sensor sensorDHT = {GPIOB, GPIO_PIN_13, DHT11, GPIO_NOPULL};
 uint8_t estadoRele;
 DHT_data datosDHT;
+uint8_t flag_LDR = 0;
+uint8_t acum_umbral = 0;
+
 
 void init_sensores (ADC_HandleTypeDef* handler_adc){
 	hadc = handler_adc;
@@ -37,6 +40,7 @@ DHT_data get_datosDHT (void){
 
 void update_ldr (void){
 	lecturaLDR = HAL_ADC_GetValue(hadc);
+	flag_LDR = 1;
 } //fin if update_ldr()
 
 
@@ -97,26 +101,46 @@ void check_luzAuto (void){
 
 			switch (estadoRele){ //LOGICA NEGATIVA
 				case 1:
+					if (!flag_LDR) break;
+
 					if (lecturaLDR < umbralMinLDR){
+						acum_umbral++;
+					}else{
+						acum_umbral = 0;
+					} //fin if lecturaLDR...
+
+					if (acum_umbral > 2){ //3 segundos por debajo del umbral
 						estadoRele = 0;
 						HAL_GPIO_WritePin(OUT_rele_GPIO_Port, OUT_rele_Pin, estadoRele);
 						setOutput(OUT_LUZ, estadoRele); //LOGICA NEGATIVA
 						refresh_infoModo();
+						acum_umbral = 0;
 						break;
-					} //fin if lecturaLDR...
+					} //fin if acum_umbral
 				break;
 				case 0:
+					if (!flag_LDR) break;
+
 					if (lecturaLDR > umbralMaxLDR){
+						acum_umbral++;
+					}else{
+						acum_umbral = 0;
+					} //fin if lecturaLDR...
+
+					if (acum_umbral > 2){ //3 segundos por encima del umbral
 						estadoRele = 1;
 						HAL_GPIO_WritePin(OUT_rele_GPIO_Port, OUT_rele_Pin, estadoRele);
 						setOutput(OUT_LUZ, estadoRele); //LOGICA NEGATIVA
 						refresh_infoModo();
+						acum_umbral = 0;
 						break;
-					} //fin if lecturaLDR...
+					} //fin if acum_umbral
 				break;
 				default:
 				break;
 			} //fin switch estadoRele
+
+			flag_LDR = 0;
 		break;
 		default:
 		break;
