@@ -86,7 +86,7 @@ void check_luzAuto (void){
 
 			if (getStatBoton(IN_LUZ) == FALL){
 				estadoRele = !estadoRele;
-				HAL_GPIO_WritePin(OUT_rele_GPIO_Port, OUT_rele_Pin, estadoRele); //LOGICA NEGATIVA
+				HAL_GPIO_WritePin(OUT_rele_GPIO_Port, OUT_rele_Pin, !estadoRele); //LOGICA NEGATIVA
 				setOutput(OUT_LUZ, estadoRele); //LOGICA NEGATIVA
 
 				refresh_infoModo();
@@ -111,7 +111,7 @@ void check_luzAuto (void){
 
 					if (acum_umbral > 2){ //3 segundos por debajo del umbral
 						estadoRele = 0;
-						HAL_GPIO_WritePin(OUT_rele_GPIO_Port, OUT_rele_Pin, estadoRele);
+						HAL_GPIO_WritePin(OUT_rele_GPIO_Port, OUT_rele_Pin, !estadoRele);
 						setOutput(OUT_LUZ, estadoRele); //LOGICA NEGATIVA
 						refresh_infoModo();
 						acum_umbral = 0;
@@ -129,7 +129,7 @@ void check_luzAuto (void){
 
 					if (acum_umbral > 2){ //3 segundos por encima del umbral
 						estadoRele = 1;
-						HAL_GPIO_WritePin(OUT_rele_GPIO_Port, OUT_rele_Pin, estadoRele);
+						HAL_GPIO_WritePin(OUT_rele_GPIO_Port, OUT_rele_Pin, !estadoRele);
 						setOutput(OUT_LUZ, estadoRele); //LOGICA NEGATIVA
 						refresh_infoModo();
 						acum_umbral = 0;
