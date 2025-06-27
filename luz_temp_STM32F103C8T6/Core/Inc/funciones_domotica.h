@@ -22,6 +22,9 @@ void set_modoLuz (uint8_t);
 uint8_t get_modoLuz (void);
 void check_luzAuto (void);
 uint8_t getStat_rele (void);
+void timeoutTestAuto (void);
+void timeoutGrabaLuzMan (void);
+void start_regHora (void);
 
 
 #endif /* INC_FUNCIONES_DOMOTICA_H_ */

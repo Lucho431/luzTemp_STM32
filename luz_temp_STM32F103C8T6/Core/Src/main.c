@@ -20,6 +20,8 @@
 #include "main.h"
 #include "adc.h"
 #include "i2c.h"
+#include "iwdg.h"
+#include "rtc.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
@@ -31,6 +33,8 @@
 #include "IOport_lfs.h"
 #include "menuPantallas.h"
 #include "funciones_domotica.h"
+#include "24lc256_lfs.h"
+#include "hora_tablero.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -40,6 +44,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+//#define IWD_OFF
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -53,6 +58,12 @@
 uint8_t flag_tim2 = 0; //cada 10 ms
 uint8_t periodo_IOport = 1; //cada 20 ms
 uint8_t periodo_temp = 99; //cada 1 segundo
+uint8_t resets = 0;
+//variables de prueba
+uint8_t varTest;
+uint8_t periodo_test = 24; //cada 250 ms
+uint8_t max_periodoTest = 24; //49;
+uint8_t dirI2C;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -100,26 +111,54 @@ int main(void)
   MX_SPI1_Init();
   MX_TIM2_Init();
   MX_USART1_UART_Init();
+  MX_IWDG_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
-//  HAL_I2C_Init(&hi2c1);
+  HAL_Delay(150);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
   HAL_TIM_Base_Start_IT(&htim2);
   HAL_ADC_Start(&hadc1);
 
-  HAL_StatusTypeDef i2c_status;
+//  uint8_t fff = sizeof (RTC_TimeTypeDef); //3 bytes
+//  __NOP();
+//  fff = sizeof (RTC_DateTypeDef); //4 bytes
+//  __NOP();
 
-  for (uint8_t i = 0; i < 128; i++){
-	  i2c_status = HAL_I2C_IsDeviceReady(&hi2c1, (uint16_t)(i<<1), 1, 10);
-	  if(i2c_status == HAL_OK){
-		  __NOP();
-	  }
-  }
+//  HAL_StatusTypeDef i2c_status;
+//
+//  for (dirI2C = 0; dirI2C < 128; dirI2C++){
+//	  i2c_status = HAL_I2C_IsDeviceReady(&hi2c1, (uint16_t)(dirI2C<<1), 1, 10);
+//	  if(i2c_status == HAL_OK){
+//		  __NOP();
+//	  }
+//  }
 
+//  while (1){
+//	  varTest = !varTest;
+//	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, varTest);
+//	  HAL_GPIO_WritePin(OUT_rele_GPIO_Port, OUT_rele_Pin, varTest);
+////	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, varTest);
+////	  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+////	  HAL_GPIO_TogglePin(OUT_rele_GPIO_Port, OUT_rele_Pin);
+//	  HAL_Delay(500);
+//	  __HAL_IWDG_RELOAD_COUNTER(&hiwdg);
+//  }
+
+  HAL_I2C_Mem_Read(&hi2c1, 0x50<<1, OFFSET_RESETS, I2C_MEMADD_SIZE_16BIT, &resets, 1, 100);
+  resets++;
+  HAL_I2C_Mem_Write(&hi2c1, 0x50<<1, OFFSET_RESETS, I2C_MEMADD_SIZE_16BIT, &resets, 1, 100);
+#ifndef IWD_OFF
+  MX_IWDG_Init();
+  __HAL_IWDG_RELOAD_COUNTER(&hiwdg);
+#endif
   lcd_init(&hi2c1, 0x27);
+//  lcd_send_string("holis");
   init_botonera(&hi2c1, 0x20);
   init_sensores(&hadc1);
-  set_modoLuz(0);
   start_menu(0);
-
+#ifndef IWD_OFF
+  __HAL_IWDG_RELOAD_COUNTER(&hiwdg);
+#endif
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -145,8 +184,18 @@ int main(void)
 			  periodo_temp = 99;
 		  }
 
+//		  if (periodo_test != 0){
+//			  periodo_test--;
+//		  }else{
+//			  varTest = !varTest;
+//			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, varTest);
+////			  HAL_GPIO_WritePin(OUT_rele_GPIO_Port, OUT_rele_Pin, varTest);
+//			  periodo_test = max_periodoTest; //cada 250 ms o 500 ms
+//		  }
+
 		  timeoutMenu();
 		  check_duracionPulsadores();
+		  timeoutTestAuto();
 
 
 		  flag_tim2 = 0;
@@ -155,7 +204,9 @@ int main(void)
 	  check_menu();
 	  check_luzAuto();
 	  update_teclas();
-
+#ifndef IWD_OFF
+	  __HAL_IWDG_RELOAD_COUNTER(&hiwdg);
+#endif
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -176,10 +227,13 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE
+                              |RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
@@ -201,7 +255,8 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_ADC;
+  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
   PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV6;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
