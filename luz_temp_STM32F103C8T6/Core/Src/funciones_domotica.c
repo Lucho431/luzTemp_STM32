@@ -21,7 +21,7 @@ static uint32_t umbralMaxLDR = 1200; //valor estimado a priori
 static uint32_t umbralMinLDR = 275; //valor estimado a priori
 uint8_t modoAuto = 1; //0 -> manual; 1 -> automatico.
 static DHT_sensor sensorDHT = {GPIOB, GPIO_PIN_13, DHT11, GPIO_NOPULL};
-uint8_t estadoRele;
+uint8_t estadoRele; //LOGICA NEGATIVA
 DHT_data datosDHT;
 uint8_t flag_LDR = 0;
 uint8_t acum_umbral = 0;
@@ -44,7 +44,10 @@ void init_sensores (ADC_HandleTypeDef* handler_adc){
 	setOutput(OUT_MODO, !modoAuto); //LOGICA NEGATIVA
 
 	HAL_I2C_Mem_Read(&hi2c1, 0x50<<1, OFFSET_ESTADO_LUZ, I2C_MEMADD_SIZE_16BIT, &estadoRele, 1, 100);
-	HAL_GPIO_WritePin(OUT_rele_GPIO_Port, OUT_rele_Pin, estadoRele); //LOGICA POSITIVA
+	HAL_GPIO_WritePin(OUT_rele_GPIO_Port, OUT_rele_Pin, estadoRele); //LOGICA NEGATIVA
+
+	HAL_I2C_Mem_Read(&hi2c1, 0x50<<1, OFFSET_MAX_LDR, I2C_MEMADD_SIZE_16BIT, (uint8_t*)&umbralMaxLDR, 4, 100);
+	HAL_I2C_Mem_Read(&hi2c1, 0x50<<1, OFFSET_MIN_LDR, I2C_MEMADD_SIZE_16BIT, (uint8_t*)&umbralMinLDR, 4, 100);
 } //fin init_sensores()
 
 
@@ -78,10 +81,12 @@ uint32_t get_umbralLDR (uint8_t u){
 void set_umbralLDR (uint8_t u, uint32_t val){
 	if (u != 0){
 		umbralMaxLDR = val;
+		HAL_I2C_Mem_Write(&hi2c1, 0x50<<1, OFFSET_MAX_LDR, I2C_MEMADD_SIZE_16BIT, (uint8_t*)&umbralMaxLDR, 4, 100);
 		return;
 	}
 
 	umbralMinLDR = val;
+	HAL_I2C_Mem_Write(&hi2c1, 0x50<<1, OFFSET_MIN_LDR, I2C_MEMADD_SIZE_16BIT, (uint8_t*)&umbralMinLDR, 4, 100);
 } //fin set_umbralLDR
 
 
@@ -151,8 +156,8 @@ void check_luzAuto (void){
 				} //fin if flag_regHora
 			}
 #else
-			switch (estadoRele){ //LOGICA POSITIVA
-				case 0: //luz apagada
+			switch (estadoRele){ //LOGICA POSITIVA (cuando es distitnto de cero : "APAGADA")
+				case 1: //luz apagada
 					if (!flag_LDR) break;
 
 					if (lecturaLDR < umbralMinLDR){ //si es de noche
@@ -162,7 +167,7 @@ void check_luzAuto (void){
 					} //fin if lecturaLDR...
 
 					if (acum_umbral > 2){ //3 segundos por debajo del umbral
-						estadoRele = 1;
+						estadoRele = 0;
 						HAL_GPIO_WritePin(OUT_rele_GPIO_Port, OUT_rele_Pin, estadoRele); //LOGICA POSITIVA
 						HAL_I2C_Mem_Write(&hi2c1, 0x50<<1, OFFSET_ESTADO_LUZ, I2C_MEMADD_SIZE_16BIT, &estadoRele, 1, 100);
 						refresh_infoModo();
@@ -170,7 +175,7 @@ void check_luzAuto (void){
 						break;
 					} //fin if acum_umbral
 				break;
-				case 1: //luz prendida
+				case 0: //luz prendida
 					if (!flag_LDR) break;
 
 					if (lecturaLDR > umbralMaxLDR){ //si es de día
@@ -180,7 +185,7 @@ void check_luzAuto (void){
 					} //fin if lecturaLDR...
 
 					if (acum_umbral > 2){ //3 segundos por encima del umbral
-						estadoRele = 0;
+						estadoRele = 1;
 						HAL_GPIO_WritePin(OUT_rele_GPIO_Port, OUT_rele_Pin, estadoRele); //LOGICA POSITIVA
 						HAL_I2C_Mem_Write(&hi2c1, 0x50<<1, OFFSET_ESTADO_LUZ, I2C_MEMADD_SIZE_16BIT, &estadoRele, 1, 100);
 						refresh_infoModo();

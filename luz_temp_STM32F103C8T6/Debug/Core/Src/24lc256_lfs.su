@@ -1,4 +1,4 @@
-../Core/Src/24lc256_lfs.c:15:6:mem_24LC256_init	16	static
-../Core/Src/24lc256_lfs.c:22:6:mem_24LC256_writePlan	112	static
-../Core/Src/24lc256_lfs.c:70:6:mem_24LC256_readIntervalo	40	static
-../Core/Src/24lc256_lfs.c:89:6:mem_24LC256_writeIntervalo	56	static
+24lc256_lfs.c:15:6:mem_24LC256_init	16	static
+24lc256_lfs.c:22:6:mem_24LC256_writePlan	112	static
+24lc256_lfs.c:70:6:mem_24LC256_readIntervalo	40	static
+24lc256_lfs.c:89:6:mem_24LC256_writeIntervalo	56	static

@@ -1,5 +1,5 @@
-../Core/Src/hora_tablero.c:13:6:update_horaFecha	8	static
-../Core/Src/hora_tablero.c:19:6:set_hora	4	static,ignoring_inline_asm
-../Core/Src/hora_tablero.c:23:6:set_fecha	4	static,ignoring_inline_asm
-../Core/Src/hora_tablero.c:27:17:get_hora	16	static
-../Core/Src/hora_tablero.c:31:17:get_fecha	16	static
+hora_tablero.c:13:6:update_horaFecha	8	static
+hora_tablero.c:19:6:set_hora	4	static,ignoring_inline_asm
+hora_tablero.c:23:6:set_fecha	4	static,ignoring_inline_asm
+hora_tablero.c:27:17:get_hora	16	static
+hora_tablero.c:31:17:get_fecha	16	static
