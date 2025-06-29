@@ -195,7 +195,8 @@ int main(void)
 
 		  timeoutMenu();
 		  check_duracionPulsadores();
-		  timeoutTestAuto();
+//		  timeoutTestAuto();
+		  timeoutGrabaSinc();
 
 
 		  flag_tim2 = 0;

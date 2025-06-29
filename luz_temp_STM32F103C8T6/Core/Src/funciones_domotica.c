@@ -215,9 +215,27 @@ void timeoutTestAuto (void){
 } //fin timeoutTestAuto()
 
 
-void timeoutGrabaLuzMan (void){
+void timeoutGrabaSinc (void){
 	if (timeout_saveLuzMan != 0) timeout_saveLuzMan--;
+
+	if (flag_regHora != 0){
+		timeout_regHora++;
+		if (timeout_regHora > 90000){ //pasaron 15 minutos
+				update_horaFecha();
+				auxHoraOff = get_hora();
+				auxFechaOff = get_fecha();
+				HAL_I2C_Mem_Write(&hi2c1, 0x50<<1, OFFSET_HORA_OFF, I2C_MEMADD_SIZE_16BIT, (uint8_t*)&auxHoraOff, 3, 100);
+				HAL_Delay(10);
+				HAL_I2C_Mem_Write(&hi2c1, 0x50<<1, OFFSET_FECHA_OFF, I2C_MEMADD_SIZE_16BIT, (uint8_t*)&auxFechaOff, 4, 100);
+				timeout_regHora = 0;
+		} //fin if (timeout_regHora > 90000)
+	} //fin if flag_regHora
+
 } //fin timeoutGrabaLuzMan()
+
+
+
+
 
 void start_regHora (void){
 	flag_regHora = 1;

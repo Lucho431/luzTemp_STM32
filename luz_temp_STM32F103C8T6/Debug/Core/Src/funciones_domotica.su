@@ -10,5 +10,5 @@ funciones_domotica.c:100:9:get_modoLuz	4	static
 funciones_domotica.c:104:6:check_luzAuto	24	static
 funciones_domotica.c:208:9:getStat_rele	4	static
 funciones_domotica.c:213:6:timeoutTestAuto	4	static
-funciones_domotica.c:218:6:timeoutGrabaLuzMan	4	static
-funciones_domotica.c:222:6:start_regHora	8	static
+funciones_domotica.c:218:6:timeoutGrabaSinc	24	static
+funciones_domotica.c:240:6:start_regHora	8	static

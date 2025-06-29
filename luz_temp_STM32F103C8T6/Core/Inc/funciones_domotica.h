@@ -23,7 +23,7 @@ uint8_t get_modoLuz (void);
 void check_luzAuto (void);
 uint8_t getStat_rele (void);
 void timeoutTestAuto (void);
-void timeoutGrabaLuzMan (void);
+void timeoutGrabaSinc (void);
 void start_regHora (void);
 
 
