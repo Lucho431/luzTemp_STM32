@@ -60,7 +60,7 @@ T_INPUT getStatBoton (T_POS_INPUT b){
 
 
 uint8_t detectaAlgunBoton (void){
-	return 0;
+	return ((~read_input) & 0x3F);
 } //fin detectaAgunBoton()
 
 

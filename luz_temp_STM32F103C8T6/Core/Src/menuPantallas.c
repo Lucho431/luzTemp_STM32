@@ -14,6 +14,10 @@
 #include "hora_tablero.h"
 #include <stdio.h>
 
+#define TOUT_BKLIGHT 1200 //5 minutos de timeOut para el backLight
+#define TOUT_ENMENU 2400 //10 minutos de timeOut para estar en el menú
+
+
 uint8_t arriba[8] = {
 		0b00000,
 		0b00100,
@@ -53,6 +57,9 @@ T_MENU* menuActual;
 T_MENU* menuAux;
 static char texto[50];
 uint16_t timeOut_pantalla = 0;
+uint16_t timeOut_backLight = 0;
+uint8_t status_backLight = 1;
+uint16_t timeOut_enMenu = 0;
 //variables menu info
 DHT_data sensorDHT;
 int8_t temperatura;
@@ -129,11 +136,46 @@ void start_menu (uint8_t service){
 
 void check_menu (void){
 	menuActual->accion();
+
+	switch (status_backLight){
+		case 0:
+			if (detectaAlgunBoton() != 0){
+				lcd_backLight(1);
+				timeOut_backLight = 0;
+				status_backLight = 1;
+			} //fin if detecta...
+		break;
+		case 1:
+			if (detectaAlgunBoton() != 0){
+				timeOut_backLight = 0;
+				break;
+			} //fin if detecta...
+			if (timeOut_backLight > TOUT_BKLIGHT){
+				lcd_backLight(0);
+				status_backLight = 0;
+			} //fin if timeOut...
+		break;
+		default:
+		break;
+	} //fin switch status_bkLight
+
+	if (menuActual->nombre != MENU_INFO){
+		if (detectaAlgunBoton() != 0){
+			timeOut_enMenu = 0;
+		}else if (timeOut_enMenu > TOUT_ENMENU){
+			menuActual = &menu[MENU_INFO];
+			menuActual->inicia_menu();
+			lcd_blinkCursOff;
+		} //fin if timeOut...
+	} //fin if (menuActual->nombre != MENU_INFO)
+
 } //fin check_menu()
 
 
 void timeoutMenu (void){
 	timeOut_pantalla++;
+	timeOut_backLight++;
+	timeOut_enMenu++;
 } //fin timeoutMenu()
 
 
@@ -779,7 +821,6 @@ void acc_setHora (void){
 					case 12:
 					case 15:
 					case 18:
-					case 19:
 						cursor_fechaHora++;
 					break;
 					case 1:
@@ -794,7 +835,7 @@ void acc_setHora (void){
 					case 7:
 						cursor_fechaHora += 5;
 					break;
-					case 20:
+					case 19:
 						cursor_fechaHora = 0;
 					break;
 					default:
@@ -813,7 +854,7 @@ void acc_setHora (void){
 
 				switch (cursor_fechaHora) {
 					case 0:
-						cursor_fechaHora = 20;
+						cursor_fechaHora = 19;
 					break;
 					case 3:
 					case 6:
@@ -828,7 +869,6 @@ void acc_setHora (void){
 					case 13:
 					case 16:
 					case 19:
-					case 20:
 						cursor_fechaHora--;
 					break;
 					case 12:
@@ -846,7 +886,7 @@ void acc_setHora (void){
 
 			} //fin if IN_LEFT
 
-			if (getStatBoton(IN_OK) == FALL){
+			if (getStatBoton(IN_UP) == FALL){
 				switch (cursor_fechaHora) {
 					case 0:
 						muestraHora.Hours += 10;
@@ -942,7 +982,7 @@ void acc_setHora (void){
 					break;
 					case 18:
 						muestraFecha.Year += 10;
-						if (muestraFecha.Year > 2099) muestraFecha.Year = 2000;
+						if (muestraFecha.Year > 99) muestraFecha.Year = 00;
 
 						lcd_put_cur(cursor_fechaHora, 2);
 						sprintf(texto, "%02d", muestraFecha.Year%100);
@@ -951,7 +991,7 @@ void acc_setHora (void){
 					break;
 					case 19:
 						muestraFecha.Year++;
-						if (muestraFecha.Year > 2099) muestraFecha.Year = 2000;
+						if (muestraFecha.Year > 99) muestraFecha.Year = 00;
 
 						lcd_put_cur(cursor_fechaHora-1, 2);
 						sprintf(texto, "%02d", muestraFecha.Year%100);
@@ -989,6 +1029,166 @@ void acc_setHora (void){
 					break;
 				} //fin switch cursor_fechaHora
 			} //fin if IN_UP
+
+			if (getStatBoton(IN_DOWN) == FALL){
+				switch (cursor_fechaHora) {
+					case 0:
+						muestraHora.Hours -= 10;
+						if (muestraHora.Hours > 23){
+							muestraHora.Hours %= 10;
+							muestraHora.Hours += 20;
+						}
+
+						lcd_put_cur(cursor_fechaHora, 2);
+						sprintf(texto, "%02d", muestraHora.Hours);
+						lcd_send_string(texto);
+						lcd_put_cur(cursor_fechaHora, 2);
+					break;
+					case 1:
+						muestraHora.Hours--;
+						if (muestraHora.Hours > 23) muestraHora.Hours = 23;
+
+						lcd_put_cur(cursor_fechaHora-1, 2);
+						sprintf(texto, "%02d", muestraHora.Hours);
+						lcd_send_string(texto);
+						lcd_put_cur(cursor_fechaHora, 2);
+					break;
+					case 3:
+						muestraHora.Minutes -= 10;
+						if (muestraHora.Minutes > 59){
+							muestraHora.Minutes %= 10;
+							muestraHora.Minutes += 50;
+						}
+
+						lcd_put_cur(cursor_fechaHora, 2);
+						sprintf(texto, "%02d", muestraHora.Minutes);
+						lcd_send_string(texto);
+						lcd_put_cur(cursor_fechaHora, 2);
+					break;
+					case 4:
+						muestraHora.Minutes--;
+						if (muestraHora.Minutes > 59) muestraHora.Minutes = 59;
+
+						lcd_put_cur(cursor_fechaHora-1, 2);
+						sprintf(texto, "%02d", muestraHora.Minutes);
+						lcd_send_string(texto);
+						lcd_put_cur(cursor_fechaHora, 2);
+					break;
+					case 6:
+						muestraHora.Seconds -= 10;
+						if (muestraHora.Seconds > 59){
+							muestraHora.Seconds %= 10;
+							muestraHora.Seconds += 50;
+						}
+
+						lcd_put_cur(cursor_fechaHora, 2);
+						sprintf(texto, "%02d", muestraHora.Seconds);
+						lcd_send_string(texto);
+						lcd_put_cur(cursor_fechaHora, 2);
+					break;
+					case 7:
+						muestraHora.Seconds--;
+						if (muestraHora.Seconds > 59) muestraHora.Seconds = 59;
+
+						lcd_put_cur(cursor_fechaHora-1, 2);
+						sprintf(texto, "%02d", muestraHora.Seconds);
+						lcd_send_string(texto);
+						lcd_put_cur(cursor_fechaHora, 2);
+					break;
+					case 12:
+						muestraFecha.Date -= 10;
+						if (muestraFecha.Date > 31){
+							muestraFecha.Date %= 10;
+							muestraFecha.Date += 30;
+						}
+						if (!muestraFecha.Date) muestraFecha.Date++;
+
+						lcd_put_cur(cursor_fechaHora, 2);
+						sprintf(texto, "%02d", muestraFecha.Date);
+						lcd_send_string(texto);
+						lcd_put_cur(cursor_fechaHora, 2);
+					break;
+					case 13:
+						muestraFecha.Date--;
+						if (!muestraFecha.Date) muestraFecha.Date = 31;
+
+						lcd_put_cur(cursor_fechaHora-1, 2);
+						sprintf(texto, "%02d", muestraFecha.Date);
+						lcd_send_string(texto);
+						lcd_put_cur(cursor_fechaHora, 2);
+					break;
+					case 15:
+						muestraFecha.Month -= 10;
+						if (muestraFecha.Month > 12){
+							muestraFecha.Month %= 10;
+							muestraFecha.Month += 10;
+						}
+						if (!muestraFecha.Month) muestraFecha.Month++;
+
+						lcd_put_cur(cursor_fechaHora, 2);
+						sprintf(texto, "%02d", muestraFecha.Month);
+						lcd_send_string(texto);
+						lcd_put_cur(cursor_fechaHora, 2);
+					break;
+					case 16:
+						muestraFecha.Month--;
+						if (!muestraFecha.Month) muestraFecha.Month = 12;
+
+						lcd_put_cur(cursor_fechaHora-1, 2);
+						sprintf(texto, "%02d", muestraFecha.Month);
+						lcd_send_string(texto);
+						lcd_put_cur(cursor_fechaHora, 2);
+					break;
+					case 18:
+						muestraFecha.Year -= 10;
+						if (muestraFecha.Year > 99) muestraFecha.Year = 00;
+
+						lcd_put_cur(cursor_fechaHora, 2);
+						sprintf(texto, "%02d", muestraFecha.Year%100);
+						lcd_send_string(texto);
+						lcd_put_cur(cursor_fechaHora, 2);
+					break;
+					case 19:
+						muestraFecha.Year--;
+						if (muestraFecha.Year > 99) muestraFecha.Year = 00;
+
+						lcd_put_cur(cursor_fechaHora-1, 2);
+						sprintf(texto, "%02d", muestraFecha.Year%100);
+						lcd_send_string(texto);
+						lcd_put_cur(cursor_fechaHora, 2);
+					break;
+					default:
+					break;
+				} //fin switch cursor_fechaHora
+
+			} //fin if DOWN
+
+			if (getStatBoton(IN_OK) == FALL){
+				lcd_blinkCursOff;
+				if ( (muestraFecha.Year % 4 == 0 && muestraFecha.Year % 100 != 0) || (muestraFecha.Year % 400 == 0) ){
+					diasPorMes[2] = 29;
+				}else{
+					diasPorMes[2] = 28;
+				}
+
+				if (muestraFecha.Date > diasPorMes[muestraFecha.Month]){
+					lcd_clear();
+					lcd_put_cur(3, 1);
+					lcd_send_string("FECHA INVALIDA");
+					timeOut_pantalla = 0;
+					pant_horaFecha = PANT_ERROR_H_F;
+				} //fin if (muestraFecha.Date > diasPorMes[muestraFecha.Month])
+
+				diaSemana = calculaDiaSemana(muestraFecha.Year, muestraFecha.Month, muestraFecha.Date);
+
+				lcd_clear();
+				lcd_put_cur(0, 0);
+				lcd_send_string("CONF. HORA Y FECHA?");
+				lcd_put_cur(0, 2);
+				lcd_send_string("ATRAS:NO  ACEPTAR:SI");
+
+				pant_horaFecha = PANT_CONFIR_H_F;
+			} //fin if IN_OK
 
 		break;
 		case PANT_CONFIR_H_F:

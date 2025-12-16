@@ -35,4 +35,6 @@ void lcd_clear (void);
 
 void lcd_CustomChar_create(uint8_t, uint8_t[]);
 
+void lcd_backLight(uint8_t);
+
 #endif /* LCD_I2C_LFS_H_ */

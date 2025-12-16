@@ -9,8 +9,11 @@
 
 #include <lcd_i2c_lfs.h>
 
+#define BKLIGHT_ON 0x08
+
 I2C_HandleTypeDef* i2c_handler;  // change your handler here accordingly
 uint8_t SLAVE_ADDRESS_LCD; //(0x3F)<<1 // change this according to ur setup
+static uint8_t backlight = BKLIGHT_ON;
 
 void lcd_send_cmd (char cmd)
 {
@@ -18,10 +21,14 @@ void lcd_send_cmd (char cmd)
 	uint8_t data_t[4];
 	data_u = (cmd&0xf0);
 	data_l = ((cmd<<4)&0xf0);
-	data_t[0] = data_u|0x0C;  //en=1, rs=0
-	data_t[1] = data_u|0x08;  //en=0, rs=0
-	data_t[2] = data_l|0x0C;  //en=1, rs=0
-	data_t[3] = data_l|0x08;  //en=0, rs=0
+//	data_t[0] = data_u|0x0C;  //en=1, rs=0
+//	data_t[1] = data_u|0x08;  //en=0, rs=0
+//	data_t[2] = data_l|0x0C;  //en=1, rs=0
+//	data_t[3] = data_l|0x08;  //en=0, rs=0
+	data_t[0] = data_u|backlight|0x04;  //en=1, rs=0
+	data_t[1] = data_u|backlight;  //en=0, rs=0
+	data_t[2] = data_l|backlight|0x04;  //en=1, rs=0
+	data_t[3] = data_l|backlight;  //en=0, rs=0
 	HAL_I2C_Master_Transmit (i2c_handler, SLAVE_ADDRESS_LCD,(uint8_t *) data_t, 4, 100);
 }
 
@@ -31,10 +38,14 @@ void lcd_send_data (char data)
 	uint8_t data_t[4];
 	data_u = (data&0xf0);
 	data_l = ((data<<4)&0xf0);
-	data_t[0] = data_u|0x0D;  //en=1, rs=0
-	data_t[1] = data_u|0x09;  //en=0, rs=0
-	data_t[2] = data_l|0x0D;  //en=1, rs=0
-	data_t[3] = data_l|0x09;  //en=0, rs=0
+//	data_t[0] = data_u|0x0D;  //en=1, rs=0
+//	data_t[1] = data_u|0x09;  //en=0, rs=0
+//	data_t[2] = data_l|0x0D;  //en=1, rs=0
+//	data_t[3] = data_l|0x09;  //en=0, rs=0
+	data_t[0] = data_u|backlight|0x05;  //en=1, rs=0
+	data_t[1] = data_u|backlight|0x01;  //en=0, rs=0
+	data_t[2] = data_l|backlight|0x05;  //en=1, rs=0
+	data_t[3] = data_l|backlight|0x01;  //en=0, rs=0
 	HAL_I2C_Master_Transmit (i2c_handler, SLAVE_ADDRESS_LCD,(uint8_t *) data_t, 4, 100);
 }
 
@@ -109,3 +120,20 @@ void lcd_CustomChar_create(uint8_t location, uint8_t charmap[]) {
 		lcd_send_data(charmap[i]);
 	}
 } //fin lcd_CustomChar_create ()
+
+
+void lcd_backLight (uint8_t l) {
+
+	//if (!slaveAddress_lcd) return;
+
+	uint8_t data;
+	HAL_I2C_Master_Receive(i2c_handler, SLAVE_ADDRESS_LCD, &data, 1, 100);
+	if (l != 0){
+		data |= 0x08;
+		backlight = BKLIGHT_ON;
+	}else{
+		data &= ~0x08;
+		backlight = 0;
+	}
+	HAL_I2C_Master_Transmit (i2c_handler, SLAVE_ADDRESS_LCD, &data, 1, 100);
+} //fin lcd_backLight ()

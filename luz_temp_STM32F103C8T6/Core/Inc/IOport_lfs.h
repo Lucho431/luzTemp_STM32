@@ -18,12 +18,21 @@ typedef enum{
 }T_INPUT;
 
 typedef enum{
+	IN_UP,
+	IN_DOWN,
+	IN_LEFT,
+	IN_RIGHT,
+	IN_BACK,
+	IN_OK,
+	/*
+	disposición vieja:
 	IN_LEFT,
 	IN_RIGHT,
 	IN_BACK,
 	IN_OK,
 	IN_LUZ,
 	IN_MODO,
+	*/
 	SIZEOF_POS_INPUT,
 }T_POS_INPUT;
 
