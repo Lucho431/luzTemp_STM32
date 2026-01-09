@@ -47,6 +47,8 @@ void lecturaTeclas(void);
 void update_teclas (void);
 T_INPUT getStatBoton (T_POS_INPUT);
 uint8_t detectaAlgunBoton (void);
+void set_bloqueoTeclado (uint8_t);
+uint8_t get_bloqueoTeclado (void);
 void setOutput (T_POS_OUTPUT, uint8_t);
 void update_outputs (void);
 

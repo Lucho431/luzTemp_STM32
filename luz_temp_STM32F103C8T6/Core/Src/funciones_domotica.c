@@ -104,13 +104,13 @@ uint8_t get_modoLuz (void){
 void check_luzAuto (void){
 	switch (modoAuto) {
 		case 0:
-			if (getStatBoton(IN_UP) == FALL){
+			if (getStatBoton(IN_DOWN) == FALL){
 				set_modoLuz(1);
 				refresh_infoModo();
 				break;
 			} //fin if IN_MODO
 
-			if (getStatBoton(IN_DOWN) == FALL){
+			if (getStatBoton(IN_UP) == FALL){
 				estadoRele = !estadoRele;
 				HAL_GPIO_WritePin(OUT_rele_GPIO_Port, OUT_rele_Pin, estadoRele); //LOGICA POSITIVA
 #ifdef TESTING
@@ -128,7 +128,7 @@ void check_luzAuto (void){
 			} //fin if IN_LUZ
 		break;
 		case 1:
-			if (getStatBoton(IN_UP) == FALL){
+			if (getStatBoton(IN_DOWN) == FALL){
 				set_modoLuz(0);
 				refresh_infoModo();
 				break;

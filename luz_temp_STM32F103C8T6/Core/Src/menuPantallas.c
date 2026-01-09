@@ -60,6 +60,7 @@ uint16_t timeOut_pantalla = 0;
 uint16_t timeOut_backLight = 0;
 uint8_t status_backLight = 1;
 uint16_t timeOut_enMenu = 0;
+uint8_t timeOut_printHora = 0;
 //variables menu info
 DHT_data sensorDHT;
 int8_t temperatura;
@@ -141,6 +142,7 @@ void check_menu (void){
 		case 0:
 			if (detectaAlgunBoton() != 0){
 				lcd_backLight(1);
+				set_bloqueoTeclado(0);
 				timeOut_backLight = 0;
 				status_backLight = 1;
 			} //fin if detecta...
@@ -152,6 +154,7 @@ void check_menu (void){
 			} //fin if detecta...
 			if (timeOut_backLight > TOUT_BKLIGHT){
 				lcd_backLight(0);
+				set_bloqueoTeclado(1);
 				status_backLight = 0;
 			} //fin if timeOut...
 		break;
@@ -176,6 +179,7 @@ void timeoutMenu (void){
 	timeOut_pantalla++;
 	timeOut_backLight++;
 	timeOut_enMenu++;
+	timeOut_printHora++;
 } //fin timeoutMenu()
 
 
@@ -197,19 +201,43 @@ void init_Info (void){
 //	humedad = 75;
 
 	lcd_clear();
-	lcd_put_cur(0, 0);
-	sprintf(texto, "Temp: %02d C", temperatura);
-	lcd_send_string(texto);
-	lcd_put_cur(8, 0);
-	lcd_send_customChar(2); //grados
 	lcd_put_cur(0, 1);
-	sprintf(texto, "Humedad: %02d%%", humedad);
+	if (temperatura < -9){
+		if (temperatura < -99){
+			temperatura = -99;
+		}
+		sprintf(texto, "Temp:%d C  ", temperatura);
+	}else if (temperatura > 99){
+		temperatura = 100;
+		sprintf(texto, "Temp:%d C  ", temperatura);
+	}else{
+		sprintf(texto, "Temp: %02d C  ", temperatura);
+	}
+	lcd_send_string(texto);
+	if (humedad < 0){
+		sprintf(texto, "Hum: 00%%");
+	}else if (humedad > 100){
+		humedad = 100;
+		sprintf(texto, "Hum: %d%%", humedad);
+	}else{
+		sprintf(texto, " Hum: %02d%%", humedad);
+	}
+	lcd_send_string(texto);
+	lcd_put_cur(8, 1);
+	lcd_send_customChar(2); //grados
+	lcd_put_cur(0, 0);
+	update_horaFecha();
+	muestraHora = get_hora();
+	muestraFecha = get_fecha();
+	sprintf(texto, "%02d:%02d:%02d    %02d/%02d/%02d", muestraHora.Hours, muestraHora.Minutes, muestraHora.Seconds, muestraFecha.Date, muestraFecha.Month, muestraFecha.Year);
 	lcd_send_string(texto);
 	lcd_put_cur(0, 2);
 	lcd_send_string("Luz: ");
 	lcd_send_string( (getStat_rele() != 0) ? "APAGADA" : "PRENDIDA");
 	lcd_put_cur(0, 3);
+	lcd_send_string("Modo: ");
 	lcd_send_string((get_modoLuz() != 0) ? "AUTOMATICO" : "MANUAL");
+	timeOut_printHora = 0;
 } //fin init_Info()
 
 
@@ -381,22 +409,41 @@ void acc_Info (void){
 		humedad = sensorDHT.hum;
 //		temperatura = 27;
 //		humedad = 75;
-
-		lcd_put_cur(6, 0);
-		sprintf(texto, "%02d  ", temperatura);
+		lcd_put_cur(5, 1);
+		if (temperatura < -9){
+			if (temperatura < -99){
+				temperatura = -99;
+			}
+			sprintf(texto, "%d", temperatura);
+		}else if (temperatura > 99){
+			temperatura = 100;
+			sprintf(texto, "%d", temperatura);
+		}else{
+			sprintf(texto, " %02d", temperatura);
+		}
 		lcd_send_string(texto);
-		lcd_put_cur(8, 0);
-		lcd_send_customChar(2); //grados
-		lcd_put_cur(9, 0);
-		lcd_send_string("C");
 
-		lcd_put_cur(9, 1);
-		sprintf(texto, "%02d%%  ", humedad);
+		lcd_put_cur(16, 1);
+		if (humedad < 0){
+			sprintf(texto, " 00%%");
+		}else if (humedad > 100){
+			humedad = 100;
+			sprintf(texto, "%d%%", humedad);
+		}else{
+			sprintf(texto, " %02d%%", humedad);
+		}
+		lcd_send_string(texto);
+
+		lcd_put_cur(0, 0);
+		update_horaFecha();
+		muestraHora = get_hora();
+		muestraFecha = get_fecha();
+		sprintf(texto, "%02d:%02d:%02d    %02d/%02d/%02d", muestraHora.Hours, muestraHora.Minutes, muestraHora.Seconds, muestraFecha.Date, muestraFecha.Month, muestraFecha.Year);
 		lcd_send_string(texto);
 
 		lcd_put_cur(5, 2);
 		lcd_send_string( (getStat_rele() != 0) ? "APAGADA " : "PRENDIDA");
-		lcd_put_cur(0, 3);
+		lcd_put_cur(6, 3);
 		lcd_send_string((get_modoLuz() != 0) ? "AUTOMATICO" : "MANUAL    ");
 
 		flag_infoDHT = 0;
@@ -406,7 +453,7 @@ void acc_Info (void){
 	if (flag_infoModo != 0){
 		lcd_put_cur(5, 2);
 		lcd_send_string( (getStat_rele() != 0) ? "APAGADA " : "PRENDIDA");
-		lcd_put_cur(0, 3);
+		lcd_put_cur(6, 3);
 		lcd_send_string((get_modoLuz() != 0) ? "AUTOMATICO" : "MANUAL    ");
 
 		flag_infoModo = 0;

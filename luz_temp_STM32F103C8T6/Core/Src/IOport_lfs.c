@@ -10,6 +10,7 @@
 
 //variables
 uint8_t flag_sinBotones = 1;
+uint8_t flag_tecladoBloqueado = 0;
 
 static uint8_t read_input, last_input, fall_input, rise_input;
 static uint8_t write_output = 0xFF;
@@ -45,6 +46,7 @@ void update_teclas (void){
 T_INPUT getStatBoton (T_POS_INPUT b){
 
 	if (flag_sinBotones != 0) return HIGH_L;
+	if (flag_tecladoBloqueado != 0) return HIGH_L;
 
 	if ( (fall_input & (1 << b)) != 0)
 		return FALL;
@@ -63,6 +65,15 @@ uint8_t detectaAlgunBoton (void){
 	return ((~read_input) & 0x3F);
 } //fin detectaAgunBoton()
 
+
+void set_bloqueoTeclado (uint8_t b){
+	flag_tecladoBloqueado = b;
+} //fin set_bloqueoTeclado()
+
+
+uint8_t get_bloqueoTeclado (void){
+	return flag_tecladoBloqueado;
+} //fin get_bloqueoTeclado()
 
 void setOutput (T_POS_OUTPUT s, uint8_t val){
 

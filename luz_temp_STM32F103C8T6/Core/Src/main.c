@@ -44,7 +44,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-//#define IWD_OFF
+#define IWD_OFF
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -124,14 +124,14 @@ int main(void)
 //  fff = sizeof (RTC_DateTypeDef); //4 bytes
 //  __NOP();
 
-//  HAL_StatusTypeDef i2c_status;
-//
-//  for (dirI2C = 0; dirI2C < 128; dirI2C++){
-//	  i2c_status = HAL_I2C_IsDeviceReady(&hi2c1, (uint16_t)(dirI2C<<1), 1, 10);
-//	  if(i2c_status == HAL_OK){
-//		  __NOP();
-//	  }
-//  }
+  HAL_StatusTypeDef i2c_status;
+
+  for (dirI2C = 0; dirI2C < 128; dirI2C++){
+	  i2c_status = HAL_I2C_IsDeviceReady(&hi2c1, (uint16_t)(dirI2C<<1), 1, 10);
+	  if(i2c_status == HAL_OK){
+		  __NOP();
+	  }
+  }
 
 //  while (1){
 //	  varTest = !varTest;
@@ -151,9 +151,9 @@ int main(void)
   MX_IWDG_Init();
   __HAL_IWDG_RELOAD_COUNTER(&hiwdg);
 #endif
-  lcd_init(&hi2c1, 0x27);
+  lcd_init(&hi2c1, 0x3F); //0x27
 //  lcd_send_string("holis");
-  init_botonera(&hi2c1, 0x20);
+  init_botonera(&hi2c1, 0x38); //0x20
   init_sensores(&hadc1);
   start_menu(0);
 #ifndef IWD_OFF
